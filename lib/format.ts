@@ -9,10 +9,13 @@ export function formatARS(value: number | string): string {
   return ARS.format(Number.isFinite(n) ? n : 0);
 }
 
+// timeZone UTC para fechas date-only (p.ej. <input type="date">), así no se
+// corren un día por el offset horario (-3 en AR).
 const DATE = new Intl.DateTimeFormat("es-AR", {
   day: "2-digit",
   month: "2-digit",
   year: "numeric",
+  timeZone: "UTC",
 });
 
 export function formatDate(value: Date | string): string {
