@@ -1,0 +1,85 @@
+// Branded Docs — schema
+// Todo cuelga de tenantId (BrandProfile) para escalar a multi-tenant después.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model BrandProfile {
+  id             String   @id @default(cuid())
+  nombre         String
+  logoUrl        String?
+  colorPrimary   String   @default("#000000")
+  colorSecondary String   @default("#ffffff")
+  colorAccent    String   @default("#c9a84c")
+  fontFamily     String   @default("Inter")
+  razonSocial    String
+  cuit           String
+  domicilio      String
+  condicionIVA   String
+  iibb           String?
+  contactoEmail  String?
+  contactoTel    String?
+  contactoWeb    String?
+  presupuestos   Presupuesto[]
+  facturas       FacturaUpload[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Presupuesto {
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         BrandProfile @relation(fields: [tenantId], references: [id])
+  numero         String
+  fecha          DateTime @default(now())
+  validezDias    Int      @default(15)
+  clienteNombre  String
+  clienteDatos   Json?
+  items          PresupuestoItem[]
+  subtotal       Decimal  @db.Decimal(12, 2)
+  ivaInformativo Decimal  @db.Decimal(12, 2) @default(0)
+  total          Decimal  @db.Decimal(12, 2)
+  condiciones    String?
+  notas          String?
+  templateId     String   @default("classic") // classic | modern
+  estado         String   @default("draft")    // draft | generated
+  pdfUrl         String?
+  createdAt      DateTime @default(now())
+}
+
+model PresupuestoItem {
+  id            String  @id @default(cuid())
+  presupuestoId String
+  presupuesto   Presupuesto @relation(fields: [presupuestoId], references: [id], onDelete: Cascade)
+  descripcion   String
+  cantidad      Decimal @db.Decimal(12, 2)
+  precioUnit    Decimal @db.Decimal(12, 2)
+  subtotal      Decimal @db.Decimal(12, 2)
+}
+
+model FacturaUpload {
+  id                 String    @id @default(cuid())
+  tenantId           String
+  tenant             BrandProfile @relation(fields: [tenantId], references: [id])
+  archivoOriginalUrl String
+  nroComprobante     String?
+  fechaComprobante   DateTime?
+  total              Decimal?  @db.Decimal(12, 2)
+  clienteNombre      String?
+  archivoBrandedUrl  String?
+  estado             String    @default("uploaded") // uploaded | processed
+  createdAt          DateTime  @default(now())
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
