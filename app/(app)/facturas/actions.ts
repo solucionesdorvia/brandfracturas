@@ -52,6 +52,11 @@ export async function createFactura(
         fechaComprobante: extraida?.fechaComprobante ?? null,
         total: extraida?.total ?? null,
         clienteNombre: extraida?.clienteNombre ?? null,
+        clienteCuit: extraida?.clienteCuit ?? null,
+        letra: extraida?.letra ?? null,
+        codComprobante: extraida?.codComprobante ?? null,
+        cae: extraida?.cae ?? null,
+        caeVto: extraida?.caeVto ?? null,
         estado: "uploaded",
       },
     });
@@ -81,9 +86,15 @@ export async function updateFacturaData(
     fechaComprobante?: string;
     total?: number | string;
     clienteNombre?: string;
+    clienteCuit?: string;
+    letra?: string;
+    codComprobante?: string;
+    cae?: string;
+    caeVto?: string;
   },
 ): Promise<void> {
   const fecha = data.fechaComprobante ? new Date(data.fechaComprobante) : null;
+  const caeVto = data.caeVto ? new Date(data.caeVto) : null;
   const total =
     data.total === "" || data.total == null ? null : Number(data.total);
 
@@ -94,6 +105,11 @@ export async function updateFacturaData(
       fechaComprobante: fecha && !isNaN(fecha.getTime()) ? fecha : null,
       total: total != null && !isNaN(total) ? total : null,
       clienteNombre: data.clienteNombre || null,
+      clienteCuit: data.clienteCuit || null,
+      letra: data.letra || null,
+      codComprobante: data.codComprobante || null,
+      cae: data.cae || null,
+      caeVto: caeVto && !isNaN(caeVto.getTime()) ? caeVto : null,
     },
   });
   await generateFacturaBrandedPdf(id);

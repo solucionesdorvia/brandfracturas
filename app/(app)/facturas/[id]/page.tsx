@@ -85,6 +85,11 @@ export default async function FacturaDetailPage({
                   fechaComprobante: toDateInput(data.fechaComprobante),
                   total: data.total != null ? String(data.total) : "",
                   clienteNombre: data.clienteNombre ?? "",
+                  clienteCuit: data.clienteCuit ?? "",
+                  letra: data.letra ?? "",
+                  codComprobante: data.codComprobante ?? "",
+                  cae: data.cae ?? "",
+                  caeVto: toDateInput(data.caeVto),
                 }}
               />
               <RegenerateFactura id={data.id} />

@@ -6,7 +6,19 @@ export type FacturaExtraida = {
   total?: number;
   clienteNombre?: string;
   clienteCuit?: string;
+  letra?: string; // A | B | C | M
+  codComprobante?: string; // 001, 006, 011...
+  cae?: string;
+  caeVto?: Date;
   textoCrudo: string;
+};
+
+// Código AFIP de comprobante -> letra.
+const COD_LETRA: Record<string, string> = {
+  "001": "A", "002": "A", "003": "A",
+  "006": "B", "007": "B", "008": "B",
+  "011": "C", "012": "C", "013": "C",
+  "051": "M", "052": "M", "053": "M",
 };
 
 // Extrae datos de una factura electrónica AFIP/ARCA a partir del texto embebido
@@ -28,14 +40,54 @@ export async function extractFacturaData(buffer: Buffer): Promise<FacturaExtraid
     .filter(Boolean);
   const flat = lines.join("\n");
 
+  const cod = parseCodComprobante(flat);
   return {
     nroComprobante: parseNroComprobante(flat),
     fechaComprobante: parseFecha(flat),
     total: parseTotal(flat),
     clienteNombre: parseCliente(lines),
     clienteCuit: parseClienteCuit(lines),
+    letra: parseLetra(flat, cod),
+    codComprobante: cod,
+    cae: parseCae(flat),
+    caeVto: parseCaeVto(flat),
     textoCrudo: text,
   };
+}
+
+// --- Código de comprobante: "Cod. 006" ---
+function parseCodComprobante(flat: string): string | undefined {
+  const m = flat.match(/c[oó]d(?:igo)?\.?\s*:?\s*0*(\d{1,3})\b/i);
+  if (m) return m[1].padStart(3, "0");
+  return undefined;
+}
+
+// --- Letra: "FACTURA B" o derivada del código ---
+function parseLetra(flat: string, cod?: string): string | undefined {
+  const m = flat.match(/factura\s+([abcm])\b/i);
+  if (m) return m[1].toUpperCase();
+  if (cod && COD_LETRA[cod]) return COD_LETRA[cod];
+  return undefined;
+}
+
+// --- CAE: "CAE N°: 71234567890123" (14 dígitos) ---
+function parseCae(flat: string): string | undefined {
+  const m = flat.match(/cae\s*(?:n[°º]?|nro|number)?\.?:?\s*(\d{14})/i);
+  return m ? m[1] : undefined;
+}
+
+// --- Vencimiento del CAE ---
+function parseCaeVto(flat: string): Date | undefined {
+  const m = flat.match(
+    /(?:vto|vencimiento)\.?\s*(?:de\s*)?(?:cae)?:?\s*(\d{1,2})[/\-](\d{1,2})[/\-](\d{2,4})/i,
+  );
+  if (!m) return undefined;
+  const d = Number(m[1]);
+  const mo = Number(m[2]);
+  let y = Number(m[3]);
+  if (y < 100) y += 2000;
+  if (d < 1 || d > 31 || mo < 1 || mo > 12) return undefined;
+  return new Date(Date.UTC(y, mo - 1, d));
 }
 
 // --- N° de comprobante: "Punto de Venta: 0001  Comp. Nro: 00000123" ---

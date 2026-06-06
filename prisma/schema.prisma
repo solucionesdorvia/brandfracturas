@@ -72,6 +72,11 @@ model FacturaUpload {
   fechaComprobante   DateTime?
   total              Decimal?  @db.Decimal(12, 2)
   clienteNombre      String?
+  clienteCuit        String?
+  letra              String?   // A | B | C (tipo de comprobante)
+  codComprobante     String?   // código AFIP (ej. 006 = Factura B)
+  cae                String?   // CAE del comprobante (para el QR/pie)
+  caeVto             DateTime? // vencimiento del CAE
   archivoBrandedUrl  String?
   estado             String    @default("uploaded") // uploaded | processed
   createdAt          DateTime  @default(now())
