@@ -11,9 +11,11 @@ export default async function AppLayout({
   const session = await getServerSession(authOptions);
   if (!session) redirect("/login");
 
+  const userLabel = session.user?.name || session.user?.email || "";
+
   return (
     <div className="min-h-screen">
-      <AppHeader />
+      <AppHeader userLabel={userLabel} />
       <main className="container py-8">{children}</main>
     </div>
   );

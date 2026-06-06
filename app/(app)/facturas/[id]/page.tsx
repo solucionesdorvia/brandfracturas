@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RegenerateFactura } from "@/components/regenerate-factura";
 import { EditFacturaData } from "@/components/edit-factura-data";
+import { ConfirmDelete } from "@/components/confirm-delete";
+import { deleteFactura } from "@/app/(app)/facturas/actions";
 import { formatARS, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -61,6 +63,7 @@ export default async function FacturaDetailPage({
               </a>
             </Button>
           )}
+          <ConfirmDelete action={deleteFactura.bind(null, data.id)} />
         </div>
       </div>
 

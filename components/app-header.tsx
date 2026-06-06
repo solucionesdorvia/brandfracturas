@@ -13,7 +13,7 @@ const NAV = [
   { href: "/identidad", label: "Identidad" },
 ];
 
-export function AppHeader() {
+export function AppHeader({ userLabel }: { userLabel?: string }) {
   const pathname = usePathname();
   return (
     <header className="border-b bg-card">
@@ -39,13 +39,20 @@ export function AppHeader() {
             ))}
           </nav>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => signOut({ callbackUrl: "/login" })}
-        >
-          Salir
-        </Button>
+        <div className="flex items-center gap-3">
+          {userLabel && (
+            <span className="hidden text-sm text-muted-foreground sm:inline">
+              {userLabel}
+            </span>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+          >
+            Salir
+          </Button>
+        </div>
       </div>
     </header>
   );

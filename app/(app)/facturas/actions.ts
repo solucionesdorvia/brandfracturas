@@ -23,6 +23,9 @@ export async function createFactura(
   if (!(file instanceof File) || file.size === 0) {
     return { ok: false, error: "Subí el PDF de la factura." };
   }
+  if (file.size > 25 * 1024 * 1024) {
+    return { ok: false, error: "El PDF no puede superar 25 MB." };
+  }
   const buffer = Buffer.from(await file.arrayBuffer());
   if (buffer.subarray(0, 5).toString() !== "%PDF-") {
     return { ok: false, error: "El archivo no es un PDF válido." };
@@ -146,4 +149,20 @@ export async function regenerateFactura(id: string): Promise<void> {
   await generateFacturaBrandedPdf(id);
   revalidatePath(`/facturas/${id}`);
   redirect(`/facturas/${id}`);
+}
+
+const keyFromUrl = (url?: string | null) =>
+  url ? url.replace(/^\/api\/files\//, "") : null;
+
+export async function deleteFactura(id: string): Promise<void> {
+  const f = await prisma.facturaUpload.findUnique({ where: { id } });
+  if (f) {
+    for (const url of [f.archivoOriginalUrl, f.archivoBrandedUrl, f.qrUrl]) {
+      const key = keyFromUrl(url);
+      if (key) await storage.delete(key).catch(() => {});
+    }
+    await prisma.facturaUpload.delete({ where: { id } });
+  }
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }

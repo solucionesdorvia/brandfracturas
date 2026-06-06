@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getDefaultTenantId } from "@/lib/tenant";
+import { storage } from "@/lib/storage";
 import { generatePresupuestoPdf } from "@/lib/pdf";
 import {
   presupuestoSchema,
@@ -89,4 +90,16 @@ export async function regeneratePresupuesto(
   await generatePresupuestoPdf(id);
   revalidatePath(`/presupuestos/${id}`);
   redirect(`/presupuestos/${id}`);
+}
+
+export async function deletePresupuesto(id: string): Promise<void> {
+  const p = await prisma.presupuesto.findUnique({ where: { id } });
+  if (p) {
+    const key = p.pdfUrl?.replace(/^\/api\/files\//, "");
+    if (key) await storage.delete(key).catch(() => {});
+    // items se borran por onDelete: Cascade
+    await prisma.presupuesto.delete({ where: { id } });
+  }
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }

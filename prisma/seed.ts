@@ -45,7 +45,7 @@ async function main() {
   const existing = await prisma.user.findUnique({ where: { email } });
   if (!existing) {
     await prisma.user.create({
-      data: { email, password: hashPassword(password) },
+      data: { email, password: hashPassword(password), name: "pruebager" },
     });
     console.log(`✓ Usuario creado: ${email} / ${password}`);
   } else {

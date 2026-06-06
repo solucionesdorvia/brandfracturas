@@ -63,7 +63,12 @@ export function FacturaForm() {
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+        {pending && (
+          <span className="text-sm text-muted-foreground">
+            Leyendo el comprobante y armando la portada… puede tardar unos segundos.
+          </span>
+        )}
         <Button type="submit" disabled={pending}>
           {pending ? "Procesando…" : "Subir y generar portada"}
         </Button>

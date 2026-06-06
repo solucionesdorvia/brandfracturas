@@ -4,6 +4,8 @@ import { getPresupuestoForRender } from "@/lib/presupuesto-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RegeneratePresupuesto } from "@/components/regenerate-presupuesto";
+import { ConfirmDelete } from "@/components/confirm-delete";
+import { deletePresupuesto } from "@/app/(app)/presupuestos/actions";
 import { formatARS, formatDate } from "@/lib/format";
 import { prisma } from "@/lib/db";
 
@@ -39,6 +41,7 @@ export default async function PresupuestoDetailPage({
               </a>
             </Button>
           )}
+          <ConfirmDelete action={deletePresupuesto.bind(null, data.id)} />
         </div>
       </div>
 

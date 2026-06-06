@@ -37,4 +37,9 @@ export class LocalStorage implements Storage {
     const full = this.resolveKey(key);
     return fs.readFile(full);
   }
+
+  async delete(key: string): Promise<void> {
+    const full = this.resolveKey(key);
+    await fs.rm(full, { force: true });
+  }
 }

@@ -9,6 +9,9 @@ export interface Storage {
 
   /** Lee el contenido crudo de `key`. */
   get(key: string): Promise<Buffer>;
+
+  /** Elimina `key` si existe (no falla si no existe). */
+  delete(key: string): Promise<void>;
 }
 
 import { LocalStorage } from "./local";

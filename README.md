@@ -41,8 +41,8 @@ npm run dev
 
 Abrir http://localhost:3000 e ingresar con las credenciales del seed:
 
-- **Email:** `admin@branded.local`
-- **Password:** `admin1234`
+- **Email:** `prueba@ger.com`
+- **Password:** `prueba123`
 
 (Se configuran en `.env` → `SEED_USER_EMAIL` / `SEED_USER_PASSWORD`.)
 
@@ -64,6 +64,28 @@ Abrir http://localhost:3000 e ingresar con las credenciales del seed:
 - `lib/pdf/generate.ts` orquesta render + `Storage` + DB.
 
 > **Sobre "byte-a-byte":** las páginas del original se copian **sin re-renderizar ni estampar nada** (se cumple la regla dura). Tras reescribir el contenedor PDF, un hash literal del archivo extraído no coincide con el original (cualquier merge re-muxea los objetos), pero el **archivo original guardado en Storage nunca se toca** (verificable por hash) y las páginas 2+ del branded conservan dimensiones y contenido del comprobante.
+
+## Facturas: lectura automática
+
+Al subir una factura **solo se elige el PDF**; la app:
+
+- **Lee los datos** del comprobante (cliente, nº, fecha, total, letra, código,
+  CAE y vto) desde el texto del PDF (`pdf-parse`), con heurísticas sobre las
+  etiquetas de AFIP **y soporte de formatos no-ARCA**. Usa los datos del emisor
+  (Identidad) para **excluirlos**: nunca asigna el CUIT/razón social del vendedor
+  como si fueran del comprador.
+- **Extrae el QR real** del comprobante (imagen embebida → `jsqr`; fallback
+  rasterizando la página) y lo usa en la portada. Si no hay QR legible, lo
+  reconstruye con los datos leídos.
+- Genera la **portada estilo ARCA** (con el logo) y la mergea adelante. El
+  original queda **intacto** en las páginas 2+.
+- Si algo se leyó mal, en el detalle hay **“Corregir datos”** (regenera) y
+  **“Eliminar”**.
+
+**Robustez:** `pdf-lib` se carga con `ignoreEncryption` (muchas facturas vienen
+encriptadas por permisos), Puppeteer corre como **browser singleton** con
+relanzamiento ante crash y reintento, y el render tiene timeouts + fallback de
+espera. Hay una suite de integración en `scripts/integration.mts`.
 
 ## Storage
 
