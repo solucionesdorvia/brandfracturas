@@ -87,7 +87,11 @@ export async function regeneratePresupuesto(
   templateId: "classic" | "modern",
 ): Promise<void> {
   await prisma.presupuesto.update({ where: { id }, data: { templateId } });
-  await generatePresupuestoPdf(id);
+  try {
+    await generatePresupuestoPdf(id);
+  } catch (e) {
+    console.error("regeneratePresupuesto/generate:", e);
+  }
   revalidatePath(`/presupuestos/${id}`);
   redirect(`/presupuestos/${id}`);
 }

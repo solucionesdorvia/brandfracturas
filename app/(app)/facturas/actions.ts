@@ -140,13 +140,23 @@ export async function updateFacturaData(
       caeVto: caeVto && !isNaN(caeVto.getTime()) ? caeVto : null,
     },
   });
-  await generateFacturaBrandedPdf(id);
+  // Si la generación falla (PDF problemático), no rompemos: el detalle muestra
+  // el aviso y permite reintentar. Nunca tiramos un error a la UI.
+  try {
+    await generateFacturaBrandedPdf(id);
+  } catch (e) {
+    console.error("updateFacturaData/generate:", e);
+  }
   revalidatePath(`/facturas/${id}`);
   redirect(`/facturas/${id}`);
 }
 
 export async function regenerateFactura(id: string): Promise<void> {
-  await generateFacturaBrandedPdf(id);
+  try {
+    await generateFacturaBrandedPdf(id);
+  } catch (e) {
+    console.error("regenerateFactura/generate:", e);
+  }
   revalidatePath(`/facturas/${id}`);
   redirect(`/facturas/${id}`);
 }
