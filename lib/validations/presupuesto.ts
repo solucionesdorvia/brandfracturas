@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { PRESUPUESTO_TEMPLATE_IDS } from "@/lib/presupuesto-templates";
 
 export const presupuestoItemSchema = z.object({
   descripcion: z.string().trim().min(1, "Descripción requerida"),
@@ -19,7 +20,7 @@ export const presupuestoSchema = z.object({
   ivaPct: z.coerce.number().min(0).max(100).default(21),
   condiciones: z.string().trim().optional(),
   notas: z.string().trim().optional(),
-  templateId: z.enum(["classic", "modern"]).default("classic"),
+  templateId: z.enum(PRESUPUESTO_TEMPLATE_IDS).default("classic"),
 });
 
 export type PresupuestoInput = z.infer<typeof presupuestoSchema>;

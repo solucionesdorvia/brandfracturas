@@ -11,6 +11,7 @@ import {
   computeTotals,
   type PresupuestoInput,
 } from "@/lib/validations/presupuesto";
+import type { PresupuestoTemplateId } from "@/lib/presupuesto-templates";
 
 export type ActionResult =
   | { ok: true; id: string }
@@ -84,7 +85,7 @@ export async function createPresupuesto(
 
 export async function regeneratePresupuesto(
   id: string,
-  templateId: "classic" | "modern",
+  templateId: PresupuestoTemplateId,
 ): Promise<void> {
   await prisma.presupuesto.update({ where: { id }, data: { templateId } });
   try {

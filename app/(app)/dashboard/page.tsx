@@ -18,6 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatARS, formatDate } from "@/lib/format";
+import { templateLabel } from "@/lib/presupuesto-templates";
 
 export const dynamic = "force-dynamic";
 
@@ -102,9 +103,7 @@ export default async function DashboardPage() {
                     <TableCell className="text-right tabular-nums">
                       {formatARS(Number(p.total))}
                     </TableCell>
-                    <TableCell>
-                      {p.templateId === "modern" ? "Membrete" : "Corporativo"}
-                    </TableCell>
+                    <TableCell>{templateLabel(p.templateId)}</TableCell>
                     <TableCell>
                       <EstadoBadge estado={p.estado} />
                     </TableCell>

@@ -1,0 +1,11 @@
+import puppeteer from "puppeteer";
+const BASE="http://localhost:3000";
+const b=await puppeteer.launch({headless:true,args:["--no-sandbox"]});
+const p=await b.newPage(); await p.setViewport({width:1100,height:900});
+await p.goto(`${BASE}/login`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,800));
+await p.evaluate(()=>{const s=(el,v)=>{const f=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el),'value').set;f.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));};s(document.querySelector('#email'),'prueba@ger.com');s(document.querySelector('#password'),'prueba123');});
+await Promise.all([p.waitForNavigation({waitUntil:"networkidle0"}).catch(()=>{}),p.evaluate(()=>document.querySelector('button[type=submit]').click())]);
+await new Promise(r=>setTimeout(r,2000));
+await p.goto(`${BASE}/presupuestos/nuevo`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,1500));
+await p.screenshot({path:"/tmp/picker.png"});
+await b.close(); console.log("ok");

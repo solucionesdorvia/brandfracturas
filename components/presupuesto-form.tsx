@@ -15,19 +15,28 @@ import {
 import { createPresupuesto } from "@/app/(app)/presupuestos/actions";
 import { computeTotals } from "@/lib/validations/presupuesto";
 import { formatARS } from "@/lib/format";
+import { TemplatePicker } from "@/components/template-picker";
 
 type ItemRow = { descripcion: string; cantidad: string; precioUnit: string };
 
 const emptyItem: ItemRow = { descripcion: "", cantidad: "1", precioUnit: "0" };
 
-export function PresupuestoForm({ defaultNumero }: { defaultNumero: string }) {
+export function PresupuestoForm({
+  defaultNumero,
+  brandPrimary = "#1f2937",
+  brandAccent = "#c9a84c",
+}: {
+  defaultNumero: string;
+  brandPrimary?: string;
+  brandAccent?: string;
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const [numero, setNumero] = useState(defaultNumero);
   const [validezDias, setValidezDias] = useState("15");
-  const [templateId, setTemplateId] = useState<"classic" | "modern">("classic");
+  const [templateId, setTemplateId] = useState<string>("classic");
   const [ivaPct, setIvaPct] = useState("21");
 
   const [clienteNombre, setClienteNombre] = useState("");
@@ -68,7 +77,7 @@ export function PresupuestoForm({ defaultNumero }: { defaultNumero: string }) {
       const res = await createPresupuesto({
         numero,
         validezDias: Number(validezDias),
-        templateId,
+        templateId: templateId as "classic",
         ivaPct: Number(ivaPct),
         clienteNombre,
         clienteEmail,
@@ -93,6 +102,23 @@ export function PresupuestoForm({ defaultNumero }: { defaultNumero: string }) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Plantilla</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TemplatePicker
+            value={templateId}
+            onChange={setTemplateId}
+            primary={brandPrimary}
+            accent={brandAccent}
+          />
+          <p className="mt-3 text-xs text-muted-foreground">
+            Todas usan tu marca (logo, colores y tipografía de Identidad).
+          </p>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -110,18 +136,6 @@ export function PresupuestoForm({ defaultNumero }: { defaultNumero: string }) {
             <div className="space-y-2">
               <Label htmlFor="iva">IVA informativo (%)</Label>
               <Input id="iva" type="number" min={0} max={100} value={ivaPct} onChange={(e) => setIvaPct(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="template">Plantilla</Label>
-              <select
-                id="template"
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                value={templateId}
-                onChange={(e) => setTemplateId(e.target.value as "classic" | "modern")}
-              >
-                <option value="classic">Corporativo (sobrio)</option>
-                <option value="modern">Membrete (con banda)</option>
-              </select>
             </div>
           </CardContent>
         </Card>

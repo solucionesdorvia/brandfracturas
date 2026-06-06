@@ -2,8 +2,17 @@ import { notFound } from "next/navigation";
 import { getPresupuestoForRender } from "@/lib/presupuesto-data";
 import { PresupuestoClassic } from "@/components/templates/presupuesto-classic";
 import { PresupuestoModern } from "@/components/templates/presupuesto-modern";
+import { PresupuestoMinimal } from "@/components/templates/presupuesto-minimal";
+import { PresupuestoLateral } from "@/components/templates/presupuesto-lateral";
 
 export const dynamic = "force-dynamic";
+
+const TEMPLATES = {
+  classic: PresupuestoClassic,
+  modern: PresupuestoModern,
+  minimal: PresupuestoMinimal,
+  lateral: PresupuestoLateral,
+} as const;
 
 export default async function RenderPresupuestoPage({
   params,
@@ -15,11 +24,7 @@ export default async function RenderPresupuestoPage({
   const data = await getPresupuestoForRender(params.id);
   if (!data) notFound();
 
-  const template = searchParams.template ?? data.templateId ?? "classic";
-
-  return template === "modern" ? (
-    <PresupuestoModern data={data} />
-  ) : (
-    <PresupuestoClassic data={data} />
-  );
+  const id = (searchParams.template ?? data.templateId ?? "classic") as keyof typeof TEMPLATES;
+  const Template = TEMPLATES[id] ?? PresupuestoClassic;
+  return <Template data={data} />;
 }
