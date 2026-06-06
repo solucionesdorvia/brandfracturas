@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getDefaultTenantId } from "@/lib/tenant";
+import { getDefaultTenant } from "@/lib/tenant";
 import { storage } from "@/lib/storage";
 import { generateFacturaBrandedPdf } from "@/lib/pdf";
 import { extractFacturaData } from "@/lib/factura-extract";
@@ -28,16 +28,22 @@ export async function createFactura(
     return { ok: false, error: "El archivo no es un PDF válido." };
   }
 
-  const tenantId = await getDefaultTenantId();
+  const tenant = await getDefaultTenant();
+  const tenantId = tenant.id;
 
   // Guardar el PDF ORIGINAL tal cual (nunca se modifica).
   const originalKey = `facturas/originals/${randomUUID()}.pdf`;
   const originalUrl = await storage.put(originalKey, buffer, "application/pdf");
 
-  // Extraer datos (best-effort; lo que no se detecta queda null y se corrige).
+  // Extraer datos. Se le pasan los datos del emisor (la empresa) para EXCLUIRLOS:
+  // así nunca se asigna el CUIT/razón social del vendedor como si fueran del cliente.
   let extraida;
   try {
-    extraida = await extractFacturaData(buffer);
+    extraida = await extractFacturaData(buffer, {
+      cuit: tenant.cuit,
+      razonSocial: tenant.razonSocial,
+      nombre: tenant.nombre,
+    });
   } catch (e) {
     console.error("Error extrayendo datos:", e);
     extraida = undefined;

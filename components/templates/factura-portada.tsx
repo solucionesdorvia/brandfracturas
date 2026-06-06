@@ -13,7 +13,7 @@ export function FacturaPortada({
   qrDataUrl?: string | null;
 }) {
   const t = data.tenant;
-  const letra = data.letra ?? "X";
+  const letra = data.letra ?? "—";
   const cod = data.codComprobante ?? "—";
   const [ptoVta, nro] = (data.nroComprobante ?? "").split("-");
 
