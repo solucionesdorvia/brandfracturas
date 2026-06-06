@@ -34,5 +34,5 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/next.config.mjs ./next.config.mjs
 EXPOSE 3000
-# Aplica migraciones y arranca Next (escucha en $PORT). El seed se corre aparte.
-CMD ["sh", "-c", "echo DBG_PORT=[$PORT]; node -v; npx prisma migrate deploy; echo DBG_MIG_$?; exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${PORT:-3000}"]
+# Aplica migraciones y arranca Next (bind 0.0.0.0 en $PORT). El seed se corre aparte.
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
