@@ -40,8 +40,8 @@ async function main() {
   }
 
   // --- Usuario único ---
-  const email = process.env.SEED_USER_EMAIL ?? "admin@branded.local";
-  const password = process.env.SEED_USER_PASSWORD ?? "admin1234";
+  const email = process.env.SEED_USER_EMAIL ?? "prueba@ger.com";
+  const password = process.env.SEED_USER_PASSWORD ?? "prueba123";
   const existing = await prisma.user.findUnique({ where: { email } });
   if (!existing) {
     await prisma.user.create({
