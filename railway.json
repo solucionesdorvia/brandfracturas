@@ -5,9 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "npx prisma migrate deploy && npm run start",
-    "healthcheckPath": "/login",
-    "healthcheckTimeout": 300,
+    "startCommand": "npx prisma migrate deploy && node node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${PORT:-3000}",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }
