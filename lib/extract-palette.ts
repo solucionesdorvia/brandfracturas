@@ -54,7 +54,7 @@ export async function extractPaletteFromImage(
     )[0];
 
     // primary: el más oscuro con frecuencia relevante; fallback al accent
-    let primary =
+    const primary =
       [...colors]
         .filter((c) => c.n >= maxN * 0.05)
         .sort((a, b) => a.l - b.l)[0] ?? accent;
