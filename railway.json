@@ -3,9 +3,5 @@
   "build": {
     "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile"
-  },
-  "deploy": {
-    "startCommand": "sh -c 'echo DBG_PORT=[$PORT]; node -v; (ls .next/BUILD_ID && echo DBG_BUILD_OK) || echo DBG_NO_BUILD; npx prisma migrate deploy; echo DBG_MIGRATE_DONE_$?; exec node node_modules/next/dist/bin/next start -H 0.0.0.0 -p ${PORT:-3000}'",
-    "restartPolicyType": "NEVER"
   }
 }
