@@ -8,6 +8,7 @@ import { getDefaultTenantId } from "@/lib/tenant";
 import { storage } from "@/lib/storage";
 import { generateFacturaBrandedPdf } from "@/lib/pdf";
 import { extractFacturaData } from "@/lib/factura-extract";
+import { extractQrFromPdf } from "@/lib/factura-qr";
 
 export type FacturaActionResult =
   | { ok: true; id: string }
@@ -42,6 +43,20 @@ export async function createFactura(
     extraida = undefined;
   }
 
+  // Extraer el QR REAL del comprobante subido y guardarlo como imagen.
+  let qrUrl: string | null = null;
+  let qrText: string | null = null;
+  try {
+    const qr = await extractQrFromPdf(buffer);
+    if (qr.qrPng) {
+      const qrKey = `facturas/qr/${randomUUID()}.png`;
+      qrUrl = await storage.put(qrKey, qr.qrPng, "image/png");
+      qrText = qr.qrText ?? null;
+    }
+  } catch (e) {
+    console.error("Error extrayendo QR:", e);
+  }
+
   let facturaId: string;
   try {
     const created = await prisma.facturaUpload.create({
@@ -57,6 +72,8 @@ export async function createFactura(
         codComprobante: extraida?.codComprobante ?? null,
         cae: extraida?.cae ?? null,
         caeVto: extraida?.caeVto ?? null,
+        qrUrl,
+        qrText,
         estado: "uploaded",
       },
     });

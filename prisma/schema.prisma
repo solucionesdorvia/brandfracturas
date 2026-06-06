@@ -77,6 +77,8 @@ model FacturaUpload {
   codComprobante     String?   // código AFIP (ej. 006 = Factura B)
   cae                String?   // CAE del comprobante (para el QR/pie)
   caeVto             DateTime? // vencimiento del CAE
+  qrUrl              String?   // QR real extraído del comprobante subido
+  qrText             String?   // contenido decodificado del QR (URL AFIP)
   archivoBrandedUrl  String?
   estado             String    @default("uploaded") // uploaded | processed
   createdAt          DateTime  @default(now())

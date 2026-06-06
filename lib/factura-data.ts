@@ -17,6 +17,7 @@ export async function getFacturaForRender(id: string) {
     codComprobante: f.codComprobante,
     cae: f.cae,
     caeVto: f.caeVto,
+    qrUrl: f.qrUrl,
     archivoOriginalUrl: f.archivoOriginalUrl,
     archivoBrandedUrl: f.archivoBrandedUrl,
     estado: f.estado,
