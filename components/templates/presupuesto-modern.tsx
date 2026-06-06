@@ -1,8 +1,9 @@
 import type { PresupuestoRenderData } from "@/lib/presupuesto-data";
-import { formatARS, formatDate } from "@/lib/format";
+import { formatARS, formatNum, formatDate } from "@/lib/format";
 
-// Plantilla MODERN: banda de color lateral, tipografía grande, totales en
-// bloque destacado. También consume el BrandProfile.
+// Plantilla MEMBRETE (banda de color). Formal, con presencia de marca: banda
+// superior en el color primario, bloque de datos enmarcado, tabla densa,
+// totales en caja bordeada, firma y pie. Sin tarjetas ni bloques tipo app.
 export function PresupuestoModern({ data }: { data: PresupuestoRenderData }) {
   const t = data.tenant;
   const validoHasta = new Date(data.fecha);
@@ -10,144 +11,175 @@ export function PresupuestoModern({ data }: { data: PresupuestoRenderData }) {
 
   return (
     <div
-      className="mx-auto flex bg-white text-[13px] text-neutral-800"
+      className="mx-auto flex flex-col bg-white text-[11px] text-neutral-900"
       style={{
         width: "210mm",
         minHeight: "297mm",
         fontFamily: `${t.fontFamily}, system-ui, sans-serif`,
       }}
     >
-      {/* Banda lateral de marca */}
-      <aside
-        className="flex w-[8mm] flex-col"
+      {/* Banda de membrete */}
+      <div
+        className="flex items-center justify-between px-[16mm] py-5 text-white"
         style={{ backgroundColor: t.colorPrimary }}
       >
-        <div className="h-1/3" style={{ backgroundColor: t.colorAccent }} />
-      </aside>
-
-      <div className="flex-1" style={{ padding: "18mm 16mm" }}>
-        {/* Encabezado */}
-        <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          {t.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={t.logoUrl} alt={t.nombre} className="h-11 w-auto object-contain" />
+          ) : null}
           <div>
-            <div
-              className="text-3xl font-extrabold tracking-tight"
-              style={{ color: t.colorPrimary }}
-            >
-              Presupuesto
-            </div>
-            <div className="mt-1 text-sm text-neutral-500">N° {data.numero}</div>
+            <div className="text-[16px] font-semibold tracking-tight">{t.razonSocial}</div>
+            <div className="text-[9px] uppercase tracking-[0.22em] text-white/70">{t.nombre}</div>
           </div>
-          <div className="flex items-center gap-3">
-            {t.logoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={t.logoUrl} alt={t.nombre} className="h-14 w-auto object-contain" />
-            ) : (
-              <div
-                className="flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold text-white"
-                style={{ backgroundColor: t.colorAccent }}
-              >
-                {t.nombre.slice(0, 2).toUpperCase()}
-              </div>
-            )}
+        </div>
+        <div className="text-right">
+          <div className="text-[13px] font-semibold uppercase tracking-[0.22em]">Presupuesto</div>
+          <div className="text-[10px] text-white/80">N° {data.numero}</div>
+        </div>
+      </div>
+      <div className="h-[2px] w-full" style={{ backgroundColor: t.colorAccent }} />
+
+      <div className="flex-1 px-[16mm] pb-[14mm] pt-6">
+        {/* Emisor / documento */}
+        <div className="flex justify-between text-[10px] text-neutral-600">
+          <div className="space-y-0.5">
+            <div>CUIT {t.cuit} · {t.condicionIVA}</div>
+            <div>{t.domicilio}</div>
+            {t.iibb && <div>IIBB {t.iibb}</div>}
+          </div>
+          <div className="space-y-0.5 text-right">
+            <div>
+              <span className="text-neutral-400">Fecha de emisión: </span>
+              {formatDate(data.fecha)}
+            </div>
+            <div>
+              <span className="text-neutral-400">Validez: </span>
+              {data.validezDias} días (hasta {formatDate(validoHasta)})
+            </div>
           </div>
         </div>
 
-        {/* Datos emisor + cliente */}
-        <div className="mt-8 grid grid-cols-2 gap-6 text-[12px]">
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-              De
+        {/* Cliente / referencia */}
+        <div className="mt-5 grid grid-cols-2 border border-neutral-300">
+          <div className="border-r border-neutral-300 p-3">
+            <div className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Cliente
             </div>
-            <div className="mt-1 font-semibold text-neutral-800">{t.razonSocial}</div>
-            <div className="text-neutral-500">CUIT {t.cuit}</div>
-            <div className="text-neutral-500">{t.condicionIVA}</div>
-            <div className="text-neutral-500">{t.domicilio}</div>
+            <div className="mt-1 text-[12px] font-semibold">{data.clienteNombre}</div>
+            <div className="mt-0.5 space-y-0.5 text-[10px] text-neutral-600">
+              {data.cliente.cuit && <div>CUIT {data.cliente.cuit}</div>}
+              {data.cliente.direccion && <div>{data.cliente.direccion}</div>}
+              {(data.cliente.email || data.cliente.tel) && (
+                <div>{[data.cliente.email, data.cliente.tel].filter(Boolean).join(" · ")}</div>
+              )}
+            </div>
           </div>
-          <div>
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400">
-              Para
+          <div className="p-3">
+            <div className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Referencia
             </div>
-            <div className="mt-1 font-semibold text-neutral-800">{data.clienteNombre}</div>
-            {data.cliente.cuit && <div className="text-neutral-500">CUIT {data.cliente.cuit}</div>}
-            {data.cliente.direccion && <div className="text-neutral-500">{data.cliente.direccion}</div>}
-            {data.cliente.email && <div className="text-neutral-500">{data.cliente.email}</div>}
-            {data.cliente.tel && <div className="text-neutral-500">{data.cliente.tel}</div>}
+            <div className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[10px] text-neutral-700">
+              <span className="text-neutral-400">Documento</span>
+              <span>Presupuesto N° {data.numero}</span>
+              <span className="text-neutral-400">Moneda</span>
+              <span>Pesos argentinos (ARS)</span>
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 flex gap-6 text-[11px] text-neutral-500">
-          <span>Fecha: {formatDate(data.fecha)}</span>
-          <span>Válido hasta: {formatDate(validoHasta)} ({data.validezDias} días)</span>
-        </div>
-
-        {/* Ítems */}
-        <table className="mt-6 w-full border-collapse">
+        {/* Detalle */}
+        <table className="mt-5 w-full border-collapse text-[10.5px]">
           <thead>
             <tr
-              className="border-b-2 text-[10px] uppercase tracking-wider text-neutral-400"
-              style={{ borderColor: t.colorPrimary }}
+              className="text-[8.5px] uppercase tracking-[0.12em] text-white"
+              style={{ backgroundColor: t.colorPrimary }}
             >
-              <th className="py-2 text-left font-semibold">Descripción</th>
-              <th className="py-2 text-right font-semibold">Cant.</th>
-              <th className="py-2 text-right font-semibold">P. unit.</th>
-              <th className="py-2 text-right font-semibold">Subtotal</th>
+              <th className="w-[34px] py-1.5 pl-2 pr-2 text-left font-semibold">Ítem</th>
+              <th className="py-1.5 pr-2 text-left font-semibold">Descripción</th>
+              <th className="w-[60px] py-1.5 px-2 text-right font-semibold">Cant.</th>
+              <th className="w-[90px] py-1.5 px-2 text-right font-semibold">P. unitario</th>
+              <th className="w-[100px] py-1.5 pl-2 pr-2 text-right font-semibold">Importe</th>
             </tr>
           </thead>
           <tbody>
-            {data.items.map((it) => (
-              <tr key={it.id} className="border-b border-neutral-100">
-                <td className="py-2.5">{it.descripcion}</td>
-                <td className="py-2.5 text-right tabular-nums">{it.cantidad}</td>
-                <td className="py-2.5 text-right tabular-nums">{formatARS(it.precioUnit)}</td>
-                <td className="py-2.5 text-right font-medium tabular-nums">{formatARS(it.subtotal)}</td>
+            {data.items.map((it, i) => (
+              <tr key={it.id} className="border-b border-neutral-200 align-top">
+                <td className="py-1.5 pl-2 pr-2 text-neutral-400">{String(i + 1).padStart(2, "0")}</td>
+                <td className="py-1.5 pr-2 text-neutral-800">{it.descripcion}</td>
+                <td className="py-1.5 px-2 text-right tabular-nums">{formatNum(it.cantidad)}</td>
+                <td className="py-1.5 px-2 text-right tabular-nums">{formatNum(it.precioUnit)}</td>
+                <td className="py-1.5 pl-2 pr-2 text-right tabular-nums">{formatNum(it.subtotal)}</td>
               </tr>
             ))}
           </tbody>
         </table>
 
-        {/* Totales en bloque */}
-        <div className="mt-6 flex justify-end">
-          <div
-            className="w-72 rounded-lg p-4 text-white"
-            style={{ backgroundColor: t.colorPrimary }}
-          >
-            <div className="flex justify-between text-[12px] opacity-80">
-              <span>Subtotal</span>
-              <span className="tabular-nums">{formatARS(data.subtotal)}</span>
-            </div>
-            <div className="mt-1 flex justify-between text-[12px] opacity-80">
-              <span>IVA informativo</span>
-              <span className="tabular-nums">{formatARS(data.ivaInformativo)}</span>
-            </div>
-            <div
-              className="mt-2 flex justify-between border-t pt-2 text-lg font-bold"
-              style={{ borderColor: t.colorAccent }}
-            >
-              <span>Total</span>
-              <span className="tabular-nums">{formatARS(data.total)}</span>
-            </div>
-          </div>
+        {/* Totales en caja bordeada */}
+        <div className="mt-3 flex justify-end">
+          <table className="w-[260px] border border-neutral-300 text-[11px]">
+            <tbody>
+              <tr>
+                <td className="px-3 py-1 text-neutral-500">Subtotal</td>
+                <td className="px-3 py-1 text-right tabular-nums">{formatARS(data.subtotal)}</td>
+              </tr>
+              <tr className="border-b border-neutral-200">
+                <td className="px-3 py-1 text-neutral-500">IVA (informativo)</td>
+                <td className="px-3 py-1 text-right tabular-nums">{formatARS(data.ivaInformativo)}</td>
+              </tr>
+              <tr style={{ backgroundColor: t.colorPrimary }} className="text-white">
+                <td className="px-3 py-1.5 text-[12px] font-semibold uppercase tracking-wide">Total</td>
+                <td className="px-3 py-1.5 text-right text-[13px] font-semibold tabular-nums">
+                  {formatARS(data.total)}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
+        {/* Condiciones */}
         {(data.condiciones || data.notas) && (
-          <div className="mt-8 space-y-3 text-[12px] text-neutral-600">
+          <div className="mt-6 grid grid-cols-2 gap-8 text-[10px] text-neutral-700">
             {data.condiciones && (
               <div>
-                <div className="font-semibold text-neutral-700">Condiciones</div>
-                <div className="whitespace-pre-line">{data.condiciones}</div>
+                <div className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+                  Condiciones comerciales
+                </div>
+                <div className="mt-1 whitespace-pre-line leading-relaxed">{data.condiciones}</div>
               </div>
             )}
             {data.notas && (
               <div>
-                <div className="font-semibold text-neutral-700">Notas</div>
-                <div className="whitespace-pre-line">{data.notas}</div>
+                <div className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+                  Observaciones
+                </div>
+                <div className="mt-1 whitespace-pre-line leading-relaxed">{data.notas}</div>
               </div>
             )}
           </div>
         )}
 
-        <div className="mt-10 text-center text-[10px] text-neutral-400">
-          {[t.contactoEmail, t.contactoTel, t.contactoWeb].filter(Boolean).join("  ·  ")}
+        {/* Firma */}
+        <div className="mt-12 flex justify-end">
+          <div className="w-[230px] text-center">
+            <div className="border-t border-neutral-400 pt-1 text-[10px] text-neutral-600">
+              Por {t.razonSocial}
+            </div>
+            <div className="text-[9px] text-neutral-400">Firma y aclaración</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Pie con banda */}
+      <div
+        className="px-[16mm] py-2 text-[8.5px] text-white"
+        style={{ backgroundColor: t.colorPrimary }}
+      >
+        <div className="flex justify-between">
+          <span>
+            {t.razonSocial} · CUIT {t.cuit}
+          </span>
+          <span>{[t.contactoEmail, t.contactoTel, t.contactoWeb].filter(Boolean).join(" · ")}</span>
         </div>
       </div>
     </div>

@@ -26,7 +26,7 @@ export function RegeneratePresupuesto({
         disabled={pending}
         onClick={() => regen("classic")}
       >
-        Classic
+        Corporativo
       </Button>
       <Button
         size="sm"
@@ -34,7 +34,7 @@ export function RegeneratePresupuesto({
         disabled={pending}
         onClick={() => regen("modern")}
       >
-        Modern
+        Membrete
       </Button>
       {pending && <span className="text-sm text-muted-foreground">Regenerando…</span>}
     </div>

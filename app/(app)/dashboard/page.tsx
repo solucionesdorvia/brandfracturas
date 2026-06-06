@@ -102,7 +102,9 @@ export default async function DashboardPage() {
                     <TableCell className="text-right tabular-nums">
                       {formatARS(Number(p.total))}
                     </TableCell>
-                    <TableCell className="capitalize">{p.templateId}</TableCell>
+                    <TableCell>
+                      {p.templateId === "modern" ? "Membrete" : "Corporativo"}
+                    </TableCell>
                     <TableCell>
                       <EstadoBadge estado={p.estado} />
                     </TableCell>

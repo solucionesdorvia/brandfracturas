@@ -119,8 +119,8 @@ export function PresupuestoForm({ defaultNumero }: { defaultNumero: string }) {
                 value={templateId}
                 onChange={(e) => setTemplateId(e.target.value as "classic" | "modern")}
               >
-                <option value="classic">Classic</option>
-                <option value="modern">Modern</option>
+                <option value="classic">Corporativo (sobrio)</option>
+                <option value="modern">Membrete (con banda)</option>
               </select>
             </div>
           </CardContent>

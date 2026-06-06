@@ -1,126 +1,140 @@
 import type { FacturaRenderData } from "@/lib/factura-data";
 import { formatARS, formatDate } from "@/lib/format";
 
-// Portada branded que se antepone a la factura legal. NO reemplaza ni altera
-// el comprobante: es la hoja 1; la factura original va en las hojas 2+.
+// Portada formal que se antepone a la factura legal. Documento sobrio tipo
+// carátula: membrete, datos del comprobante enmarcados y nota de adjunto.
+// NO reemplaza ni altera el comprobante: es la hoja 1, el original va en 2+.
 export function FacturaPortada({ data }: { data: FacturaRenderData }) {
   const t = data.tenant;
   return (
     <div
-      className="mx-auto flex flex-col bg-white text-neutral-800"
+      className="mx-auto flex flex-col bg-white text-[11px] text-neutral-900"
       style={{
         width: "210mm",
         minHeight: "297mm",
-        padding: "20mm 18mm",
         fontFamily: `${t.fontFamily}, system-ui, sans-serif`,
       }}
     >
-      {/* Encabezado de marca */}
+      {/* Banda de membrete */}
       <div
-        className="flex items-center gap-5 border-b-2 pb-6"
-        style={{ borderColor: t.colorAccent }}
+        className="flex items-center justify-between px-[18mm] py-5 text-white"
+        style={{ backgroundColor: t.colorPrimary }}
       >
-        {t.logoUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={t.logoUrl} alt={t.nombre} className="h-20 w-auto object-contain" />
-        ) : (
-          <div
-            className="flex h-20 w-20 items-center justify-center rounded-lg text-2xl font-bold text-white"
-            style={{ backgroundColor: t.colorPrimary }}
-          >
-            {t.nombre.slice(0, 2).toUpperCase()}
+        <div className="flex items-center gap-3">
+          {t.logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={t.logoUrl} alt={t.nombre} className="h-11 w-auto object-contain" />
+          ) : null}
+          <div>
+            <div className="text-[16px] font-semibold tracking-tight">{t.razonSocial}</div>
+            <div className="text-[9px] uppercase tracking-[0.22em] text-white/70">{t.nombre}</div>
           </div>
-        )}
-        <div>
-          <div className="text-2xl font-bold" style={{ color: t.colorPrimary }}>
-            {t.razonSocial}
-          </div>
-          <div className="text-sm text-neutral-500">
-            CUIT {t.cuit} · {t.condicionIVA}
-          </div>
-          <div className="text-sm text-neutral-500">{t.domicilio}</div>
+        </div>
+        <div className="text-right text-[10px] text-white/80">
+          <div>CUIT {t.cuit}</div>
+          <div>{t.condicionIVA}</div>
         </div>
       </div>
+      <div className="h-[2px] w-full" style={{ backgroundColor: t.colorAccent }} />
 
-      {/* Resumen del comprobante */}
-      <div className="mt-12">
-        <div className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-          Comprobante
+      <div className="flex-1 px-[18mm] pt-12">
+        <div className="text-[10px] font-semibold uppercase tracking-[0.28em] text-neutral-400">
+          Comprobante fiscal
         </div>
-        <div
-          className="mt-4 grid grid-cols-2 gap-6 rounded-xl border p-8"
-          style={{ borderColor: t.colorAccent }}
-        >
-          <Field label="Cliente" value={data.clienteNombre ?? "—"} />
-          <Field label="Nº de comprobante" value={data.nroComprobante ?? "—"} />
-          <Field
+        <div className="mt-1 text-[22px] font-semibold tracking-tight text-neutral-900">
+          Detalle del comprobante
+        </div>
+
+        {/* Datos del comprobante en grilla tipo formulario */}
+        <div className="mt-8 border border-neutral-300">
+          <Row label="Cliente" value={data.clienteNombre ?? "—"} />
+          <Row label="N° de comprobante" value={data.nroComprobante ?? "—"} />
+          <Row
             label="Fecha"
             value={data.fechaComprobante ? formatDate(data.fechaComprobante) : "—"}
           />
-          <Field
-            label="Total"
+          <Row
+            label="Importe total"
             value={data.total != null ? formatARS(data.total) : "—"}
-            emphasis={t.colorPrimary}
+            emphasis
+            last
           />
         </div>
+
+        {/* Datos de contacto / fiscales */}
+        <div className="mt-10 grid grid-cols-2 gap-8 text-[10px]">
+          <div>
+            <div className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Contacto
+            </div>
+            <div className="mt-1 space-y-0.5 text-neutral-700">
+              {t.contactoEmail && <div>{t.contactoEmail}</div>}
+              {t.contactoTel && <div>{t.contactoTel}</div>}
+              {t.contactoWeb && <div>{t.contactoWeb}</div>}
+            </div>
+          </div>
+          <div>
+            <div className="text-[8.5px] font-semibold uppercase tracking-[0.18em] text-neutral-400">
+              Datos del emisor
+            </div>
+            <div className="mt-1 space-y-0.5 text-neutral-700">
+              <div>{t.razonSocial}</div>
+              <div>CUIT {t.cuit} · {t.condicionIVA}</div>
+              <div>{t.domicilio}</div>
+              {t.iibb && <div>IIBB {t.iibb}</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Nota de adjunto */}
+        <div className="mt-12 border-l-2 pl-4 text-[10px] text-neutral-600" style={{ borderColor: t.colorPrimary }}>
+          El comprobante fiscal original, emitido conforme a la normativa vigente,
+          se adjunta a continuación en las páginas siguientes y se conserva sin
+          modificaciones.
+        </div>
       </div>
 
-      {/* Datos de pago / contacto */}
-      <div className="mt-10 grid grid-cols-2 gap-6 text-sm">
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-            Datos de contacto
-          </div>
-          <div className="mt-2 space-y-0.5 text-neutral-600">
-            {t.contactoEmail && <div>{t.contactoEmail}</div>}
-            {t.contactoTel && <div>{t.contactoTel}</div>}
-            {t.contactoWeb && <div>{t.contactoWeb}</div>}
-          </div>
-        </div>
-        <div>
-          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-            Datos fiscales
-          </div>
-          <div className="mt-2 space-y-0.5 text-neutral-600">
-            <div>CUIT {t.cuit}</div>
-            <div>{t.condicionIVA}</div>
-            {t.iibb && <div>IIBB {t.iibb}</div>}
-          </div>
-        </div>
-      </div>
-
-      {/* Leyenda */}
-      <div className="mt-auto pt-10">
-        <div
-          className="rounded-lg px-5 py-4 text-center text-sm font-medium text-white"
-          style={{ backgroundColor: t.colorPrimary }}
-        >
-          Factura adjunta a continuación →
-        </div>
-        <div className="mt-3 text-center text-[10px] text-neutral-400">
-          Esta portada acompaña al comprobante legal original, que se conserva
-          sin modificaciones en las páginas siguientes.
+      {/* Pie con banda */}
+      <div
+        className="px-[18mm] py-2 text-[8.5px] text-white"
+        style={{ backgroundColor: t.colorPrimary }}
+      >
+        <div className="flex justify-between">
+          <span>
+            {t.razonSocial} · CUIT {t.cuit}
+          </span>
+          <span>{[t.contactoEmail, t.contactoTel, t.contactoWeb].filter(Boolean).join(" · ")}</span>
         </div>
       </div>
     </div>
   );
 }
 
-function Field({
+function Row({
   label,
   value,
   emphasis,
+  last,
 }: {
   label: string;
   value: string;
-  emphasis?: string;
+  emphasis?: boolean;
+  last?: boolean;
 }) {
   return (
-    <div>
-      <div className="text-xs uppercase tracking-wider text-neutral-400">{label}</div>
+    <div
+      className={
+        "grid grid-cols-[180px_1fr] " + (last ? "" : "border-b border-neutral-200")
+      }
+    >
+      <div className="border-r border-neutral-200 bg-neutral-50 px-4 py-3 text-[9px] font-semibold uppercase tracking-[0.14em] text-neutral-500">
+        {label}
+      </div>
       <div
-        className="mt-1 text-lg font-semibold"
-        style={emphasis ? { color: emphasis } : undefined}
+        className={
+          "px-4 py-3 " +
+          (emphasis ? "text-[15px] font-semibold text-neutral-900" : "text-[12px] text-neutral-800")
+        }
       >
         {value}
       </div>

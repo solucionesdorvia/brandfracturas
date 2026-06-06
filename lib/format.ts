@@ -9,6 +9,17 @@ export function formatARS(value: number | string): string {
   return ARS.format(Number.isFinite(n) ? n : 0);
 }
 
+// Número sin símbolo de moneda (para celdas de tablas densas).
+const NUM = new Intl.NumberFormat("es-AR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+export function formatNum(value: number | string): string {
+  const n = typeof value === "string" ? Number(value) : value;
+  return NUM.format(Number.isFinite(n) ? n : 0);
+}
+
 // timeZone UTC para fechas date-only (p.ej. <input type="date">), así no se
 // corren un día por el offset horario (-3 en AR).
 const DATE = new Intl.DateTimeFormat("es-AR", {
