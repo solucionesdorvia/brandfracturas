@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { updateBranding } from "@/app/(app)/identidad/actions";
 import { FONT_OPTIONS } from "@/lib/validations/branding";
+import { extractPaletteFromImage } from "@/lib/extract-palette";
 
 type BrandData = {
   nombre: string;
@@ -75,12 +76,20 @@ export function BrandingForm({ brand }: { brand: BrandData }) {
 
   const [logoPreview, setLogoPreview] = useState<string | null>(brand.logoUrl);
   const [removeLogo, setRemoveLogo] = useState(false);
+  const [paletteFromLogo, setPaletteFromLogo] = useState(false);
 
-  function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
-    if (f) {
-      setLogoPreview(URL.createObjectURL(f));
-      setRemoveLogo(false);
+    if (!f) return;
+    setLogoPreview(URL.createObjectURL(f));
+    setRemoveLogo(false);
+    // Sugerir paleta a partir del logo (editable después).
+    const palette = await extractPaletteFromImage(f);
+    if (palette) {
+      setPrimary(palette.primary);
+      setSecondary(palette.secondary);
+      setAccent(palette.accent);
+      setPaletteFromLogo(true);
     }
   }
 
@@ -127,7 +136,8 @@ export function BrandingForm({ brand }: { brand: BrandData }) {
                   onChange={onLogoChange}
                 />
                 <p className="text-xs text-muted-foreground">
-                  PNG, JPG, SVG o WebP · máx 3 MB.
+                  PNG, JPG, SVG o WebP · máx 3 MB. Al subirlo, sugerimos una
+                  paleta basada en tus colores.
                 </p>
                 {brand.logoUrl && (
                   <label className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -150,6 +160,11 @@ export function BrandingForm({ brand }: { brand: BrandData }) {
             <CardTitle className="text-lg">Paleta y tipografía</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {paletteFromLogo && (
+              <p className="rounded-md bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
+                Paleta sugerida a partir de tu logo. Ajustá lo que quieras y guardá.
+              </p>
+            )}
             <div className="grid gap-4 sm:grid-cols-3">
               <ColorField id="colorPrimary" label="Primario" value={primary} onChange={setPrimary} />
               <ColorField id="colorSecondary" label="Secundario" value={secondary} onChange={setSecondary} />

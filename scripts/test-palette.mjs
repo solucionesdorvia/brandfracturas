@@ -1,0 +1,17 @@
+import puppeteer from "puppeteer";
+const BASE="http://localhost:3000";
+const b=await puppeteer.launch({headless:true,args:["--no-sandbox"]});
+const p=await b.newPage(); await p.setViewport({width:1100,height:900});
+await p.goto(`${BASE}/login`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,800));
+await p.evaluate(()=>{const s=(el,v)=>{const f=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el),'value').set;f.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));};s(document.querySelector('#email'),'prueba@ger.com');s(document.querySelector('#password'),'prueba123');});
+await Promise.all([p.waitForNavigation({waitUntil:"networkidle0"}).catch(()=>{}),p.evaluate(()=>document.querySelector('button[type=submit]').click())]);
+await new Promise(r=>setTimeout(r,2000));
+await p.goto(`${BASE}/identidad`,{waitUntil:"networkidle0"}); await p.waitForSelector('#logo'); await new Promise(r=>setTimeout(r,1200));
+const before = await p.evaluate(()=>({p:document.querySelector('#colorPrimary').value,s:document.querySelector('#colorSecondary').value,a:document.querySelector('#colorAccent').value}));
+console.log("antes:", JSON.stringify(before));
+const input=await p.$('#logo'); await input.uploadFile('/Users/valentindoroszuk/Downloads/dorvia.png');
+await new Promise(r=>setTimeout(r,2500));
+const after = await p.evaluate(()=>({p:document.querySelector('#colorPrimary').value,s:document.querySelector('#colorSecondary').value,a:document.querySelector('#colorAccent').value,hint:!!Array.from(document.querySelectorAll('p')).find(x=>/Paleta sugerida/.test(x.innerText))}));
+console.log("después:", JSON.stringify(after));
+await p.screenshot({path:"/tmp/palette.png"});
+await b.close();
