@@ -28,6 +28,8 @@ async function launch(): Promise<Browser> {
   const puppeteer = (await import("puppeteer")).default;
   return puppeteer.launch({
     headless: true,
+    // En prod/Docker usamos el Chromium del sistema (apt) vía esta env.
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

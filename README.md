@@ -93,9 +93,33 @@ espera. Hay una suite de integración en `scripts/integration.mts`.
 
 ## Deploy en Railway
 
-- Setear las env vars (incluido `RENDER_BASE_URL` apuntando a la URL pública).
-- Si Chromium consume mucha memoria, setear `PUPPETEER_USE_SPARTICUZ=1`, instalar `puppeteer-core @sparticuz/chromium` y habilitar la rama ya documentada en `lib/pdf/browser.ts`.
-- El `Storage` local necesita un volumen persistente (o migrar a S3).
+El repo trae **`Dockerfile`** (Node 22 + Chromium del sistema) y **`railway.json`**.
+La imagen fue probada localmente: build + migraciones + Puppeteer generando PDFs.
+
+Pasos:
+
+1. **New Project → Deploy from GitHub repo** → elegí `brandfracturas`. Railway
+   detecta el `Dockerfile` automáticamente.
+2. **Add a Postgres** (botón *New → Database → PostgreSQL*). Railway expone
+   `DATABASE_URL` en el plugin.
+3. En el **servicio de la app → Variables**, agregá:
+   - `DATABASE_URL` = referenciá la del Postgres (`${{Postgres.DATABASE_URL}}`)
+   - `NEXTAUTH_URL` = la URL pública del servicio (ej. `https://tuapp.up.railway.app`)
+   - `NEXTAUTH_SECRET` = generá uno: `openssl rand -base64 32`
+   - `STORAGE_DIR` = `/data/storage`
+   - `SEED_USER_EMAIL` / `SEED_USER_PASSWORD` (opcional, para el seed)
+   - (no hace falta `RENDER_BASE_URL`: por defecto usa `http://127.0.0.1:$PORT`)
+4. **Volume**: en el servicio, *New Volume* montado en **`/data`** (para que los
+   PDFs generados y subidos persistan entre deploys).
+5. El primer deploy corre `prisma migrate deploy` solo. Para crear el usuario y
+   el `BrandProfile` inicial, corré una vez el seed (Railway *Shell* del
+   servicio): `npm run db:seed`.
+
+Notas:
+- `PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium` ya viene seteado en la imagen.
+- Alternativa serverless: `PUPPETEER_USE_SPARTICUZ=1` + instalar
+  `puppeteer-core @sparticuz/chromium` (rama lista en `lib/pdf/browser.ts`).
+- Para escalar el storage a S3, implementá la interfaz `Storage` (lib/storage).
 
 ## Scripts
 

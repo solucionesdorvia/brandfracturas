@@ -1,7 +1,11 @@
 import type { Page } from "puppeteer";
 import { getBrowser } from "./browser";
 
-const RENDER_BASE_URL = process.env.RENDER_BASE_URL ?? "http://localhost:3000";
+// Puppeteer corre en el mismo contenedor que Next, así que pega contra el
+// server interno. En prod tomamos el PORT que asigna la plataforma.
+const RENDER_BASE_URL =
+  process.env.RENDER_BASE_URL ??
+  `http://127.0.0.1:${process.env.PORT ?? 3000}`;
 const NAV_TIMEOUT = 45_000;
 
 /**
