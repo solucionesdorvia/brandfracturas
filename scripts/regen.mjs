@@ -1,0 +1,21 @@
+import { PrismaClient } from "@prisma/client";
+import puppeteer from "puppeteer";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+const prisma = new PrismaClient();
+// borrar facturas de prueba sin original real
+const del = await prisma.facturaUpload.deleteMany({ where: { archivoOriginalUrl: { in: ['/api/files/x.pdf'] } } });
+console.log('facturas test borradas:', del.count);
+const p = await prisma.presupuesto.findFirst({ orderBy:{ createdAt:'desc' } });
+const browser = await puppeteer.launch({ headless:true, args:['--no-sandbox'] });
+const pg = await browser.newPage();
+await pg.goto(`http://localhost:3000/render/presupuesto/${p.id}?template=${p.templateId}`, { waitUntil:'networkidle0' });
+await pg.evaluateHandle('document.fonts.ready');
+const pdf = Buffer.from(await pg.pdf({ format:'A4', printBackground:true, margin:{top:'0',right:'0',bottom:'0',left:'0'} }));
+await browser.close();
+const full = path.resolve(process.cwd(), 'storage', `presupuestos/${p.id}.pdf`);
+await fs.mkdir(path.dirname(full), { recursive:true });
+await fs.writeFile(full, pdf);
+await prisma.presupuesto.update({ where:{id:p.id}, data:{ pdfUrl:`/api/files/presupuestos/${p.id}.pdf`, estado:'generated' } });
+console.log('PDF regenerado:', pdf.length, 'bytes | header', pdf.subarray(0,5).toString());
+await prisma.$disconnect();

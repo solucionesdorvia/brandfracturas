@@ -39,5 +39,5 @@ next-env.d.ts
 /app/generated/prisma
 
 # Branded Docs
+# /storage: PDFs generados y archivos subidos (datos de runtime, no código)
 /storage
-/scripts
