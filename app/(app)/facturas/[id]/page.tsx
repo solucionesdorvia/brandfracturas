@@ -4,9 +4,15 @@ import { getFacturaForRender } from "@/lib/factura-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RegenerateFactura } from "@/components/regenerate-factura";
+import { EditFacturaData } from "@/components/edit-factura-data";
 import { formatARS, formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+function toDateInput(d: Date | null): string {
+  if (!d) return "";
+  return new Date(d).toISOString().slice(0, 10);
+}
 
 export default async function FacturaDetailPage({
   params,
@@ -15,6 +21,13 @@ export default async function FacturaDetailPage({
 }) {
   const data = await getFacturaForRender(params.id);
   if (!data) notFound();
+
+  const faltantes = [
+    !data.clienteNombre && "cliente",
+    !data.nroComprobante && "nº de comprobante",
+    !data.fechaComprobante && "fecha",
+    data.total == null && "total",
+  ].filter(Boolean) as string[];
 
   return (
     <div className="space-y-6">
@@ -51,12 +64,32 @@ export default async function FacturaDetailPage({
         </div>
       </div>
 
+      {faltantes.length > 0 && (
+        <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
+          No se pudieron leer automáticamente: {faltantes.join(", ")}. Usá
+          “Corregir datos” para completarlos y regenerar la portada.
+        </div>
+      )}
+
       <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <CardTitle className="text-lg">
-            Vista previa (portada + factura original)
-          </CardTitle>
-          <RegenerateFactura id={data.id} />
+        <CardHeader className="space-y-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">
+              Datos del comprobante (lectura automática)
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <EditFacturaData
+                id={data.id}
+                initial={{
+                  nroComprobante: data.nroComprobante ?? "",
+                  fechaComprobante: toDateInput(data.fechaComprobante),
+                  total: data.total != null ? String(data.total) : "",
+                  clienteNombre: data.clienteNombre ?? "",
+                }}
+              />
+              <RegenerateFactura id={data.id} />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           {data.archivoBrandedUrl ? (

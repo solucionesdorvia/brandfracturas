@@ -8,7 +8,8 @@ export default function NuevaFacturaPage() {
       <div>
         <h1 className="text-2xl font-semibold">Nueva factura</h1>
         <p className="text-muted-foreground">
-          Subí la factura legal ya emitida y agregale una portada de marca.
+          Subí la factura legal ya emitida. La app lee los datos del comprobante
+          y genera la portada de marca automáticamente.
         </p>
       </div>
       <FacturaForm />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { createFactura } from "@/app/(app)/facturas/actions";
 
 export function FacturaForm() {
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -30,12 +29,12 @@ export function FacturaForm() {
   }
 
   return (
-    <form ref={formRef} onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={onSubmit} className="space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Factura legal (PDF)</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-3">
           <Label htmlFor="archivo">Archivo PDF con CAE ya emitido</Label>
           <Input
             id="archivo"
@@ -48,32 +47,16 @@ export function FacturaForm() {
           {fileName && (
             <p className="text-sm text-muted-foreground">Seleccionado: {fileName}</p>
           )}
-          <p className="text-xs text-muted-foreground">
-            El comprobante original no se modifica: queda intacto en las hojas 2+.
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Datos de la portada</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="nro">Nº de comprobante</Label>
-            <Input id="nro" name="nroComprobante" placeholder="0001-00000123" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fecha">Fecha</Label>
-            <Input id="fecha" name="fechaComprobante" type="date" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="total">Total</Label>
-            <Input id="total" name="total" type="number" min={0} step="0.01" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cliente">Cliente</Label>
-            <Input id="cliente" name="clienteNombre" required />
+          <div className="rounded-md border bg-muted/40 p-3 text-xs text-muted-foreground">
+            <p className="font-medium text-foreground">Lectura automática</p>
+            <p className="mt-1">
+              Al subir, la app lee el comprobante y detecta cliente, nº, fecha y
+              total para armar la portada. No hace falta cargar nada a mano.
+            </p>
+            <p className="mt-1">
+              El comprobante original no se modifica: queda intacto en las hojas 2+.
+              Si algún dato se leyó mal, lo podés corregir después.
+            </p>
           </div>
         </CardContent>
       </Card>
