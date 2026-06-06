@@ -10,6 +10,7 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/presupuestos/nuevo", label: "Nuevo presupuesto" },
   { href: "/facturas/nueva", label: "Nueva factura" },
+  { href: "/identidad", label: "Identidad" },
 ];
 
 export function AppHeader() {
