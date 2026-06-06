@@ -77,7 +77,7 @@ async function crearPresupuesto({cliente, desc, cant, precio, template}){
   await page.goto(`${BASE}/presupuestos/nuevo`,{waitUntil:"networkidle0"});
   await page.waitForSelector('#cliente'); await sleep(2000);
   await page.evaluate(`(${setV})('#cliente',${JSON.stringify(cliente)})`);
-  if(template) await page.evaluate(`(${setV})('#template',${JSON.stringify(template)},'change')`);
+  if(template) await page.evaluate((tpl)=>{const lbl={classic:'Corporativo',modern:'Membrete',minimal:'Minimalista',lateral:'Lateral'}[tpl];const c=Array.from(document.querySelectorAll('button')).find(x=>x.innerText.startsWith(lbl));c&&c.click();}, template);
   await page.evaluate((d,c,p,sv)=>{ eval('var setV='+sv); const descs=document.querySelectorAll('input[placeholder="Descripción"]'); const nums=Array.from(document.querySelectorAll('input[step="any"]')); const setEl=(el,v)=>{const s=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el),'value').set;s.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));}; setEl(descs[0],d); setEl(nums[0],c); setEl(nums[1],p); }, desc, String(cant), String(precio), setV);
   await sleep(500);
   const total = await page.evaluate(()=>{const m=document.body.innerText.match(/\$\s?[\d.,]+/g);return m?m[m.length-1]:null;});
