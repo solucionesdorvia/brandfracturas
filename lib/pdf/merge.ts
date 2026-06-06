@@ -8,10 +8,15 @@ import { PDFDocument } from "pdf-lib";
  * Uso en facturas: mergePdfs([portadaBranded, facturaOriginal]) → la portada
  * queda como hoja 1 y la factura legal intacta en las hojas 2+.
  */
+// Muchas facturas reales vienen con encriptación de permisos (firma/edición).
+// pdf-lib lanza error al abrirlas salvo ignoreEncryption. Esto NO modifica el
+// original: solo permite leer sus páginas para copiarlas tal cual.
+const LOAD_OPTS = { ignoreEncryption: true } as const;
+
 export async function mergePdfs(parts: Buffer[]): Promise<Buffer> {
   const out = await PDFDocument.create();
   for (const part of parts) {
-    const src = await PDFDocument.load(part);
+    const src = await PDFDocument.load(part, LOAD_OPTS);
     const pages = await out.copyPages(src, src.getPageIndices());
     for (const page of pages) out.addPage(page);
   }
@@ -21,7 +26,7 @@ export async function mergePdfs(parts: Buffer[]): Promise<Buffer> {
 
 /** Cantidad de páginas de un PDF (para validaciones/verificación). */
 export async function countPages(buffer: Buffer): Promise<number> {
-  const doc = await PDFDocument.load(buffer);
+  const doc = await PDFDocument.load(buffer, LOAD_OPTS);
   return doc.getPageCount();
 }
 
@@ -33,7 +38,7 @@ export async function extractPagesFrom(
   buffer: Buffer,
   fromIndex: number,
 ): Promise<Buffer> {
-  const src = await PDFDocument.load(buffer);
+  const src = await PDFDocument.load(buffer, LOAD_OPTS);
   const out = await PDFDocument.create();
   const indices = src
     .getPageIndices()

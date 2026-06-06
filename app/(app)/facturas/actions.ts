@@ -90,11 +90,13 @@ export async function createFactura(
   }
 
   // Generar portada + merge [portada, original]. Original intacto en 2+.
+  // Si falla, igual dejamos pasar al detalle: la factura quedó guardada y desde
+  // ahí se puede "Regenerar portada" o "Corregir datos". Así un PDF problemático
+  // no bloquea el flujo.
   try {
     await generateFacturaBrandedPdf(facturaId);
   } catch (e) {
     console.error("Error generando branded:", e);
-    return { ok: false, error: "Se guardó la factura pero falló la portada. Reintentá." };
   }
 
   revalidatePath("/dashboard");
