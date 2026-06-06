@@ -34,5 +34,5 @@ COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/next.config.mjs ./next.config.mjs
 EXPOSE 3000
-# Aplica migraciones, seedea (idempotente) y arranca Next (escucha en $PORT).
-CMD ["sh", "-c", "npx prisma migrate deploy && (npx prisma db seed || true) && npm run start"]
+# Aplica migraciones y arranca Next (escucha en $PORT). El seed se corre aparte.
+CMD ["sh", "-c", "npx prisma migrate deploy && npm run start"]
