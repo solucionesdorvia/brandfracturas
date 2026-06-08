@@ -1,0 +1,21 @@
+import puppeteer from "puppeteer";
+const BASE="https://app-production-800e.up.railway.app";
+const b=await puppeteer.launch({headless:true,args:["--no-sandbox"]});
+const p=await b.newPage(); await p.setViewport({width:1100,height:850});
+await p.goto(`${BASE}/login`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,1000));
+await p.evaluate(()=>{const s=(el,v)=>{const f=Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el),'value').set;f.call(el,v);el.dispatchEvent(new Event('input',{bubbles:true}));};s(document.querySelector('#email'),'prueba@ger.com');s(document.querySelector('#password'),'prueba123');});
+await Promise.all([p.waitForNavigation({waitUntil:"networkidle0"}).catch(()=>{}),p.evaluate(()=>document.querySelector('button[type=submit]').click())]);
+await new Promise(r=>setTimeout(r,2500));
+console.log("tras login -> path:", new URL(p.url()).pathname, "| h1:", await p.evaluate(()=>document.querySelector('h1')?.innerText));
+await p.goto(`${BASE}/dashboard`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,1500));
+console.log("dashboard -> path:", new URL(p.url()).pathname, "| h1:", await p.evaluate(()=>document.querySelector('h1')?.innerText));
+await p.goto(`${BASE}/presupuestos/nuevo`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,1200));
+console.log("nuevo presupuesto -> path:", new URL(p.url()).pathname);
+await p.goto(`${BASE}/facturas/nueva`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,1200));
+console.log("nueva factura -> path:", new URL(p.url()).pathname);
+// screenshot del onboarding
+await p.goto(`${BASE}/identidad`,{waitUntil:"networkidle0"}); await new Promise(r=>setTimeout(r,1500));
+await p.screenshot({path:"/tmp/prod-onboarding.png"});
+const noDorvia = !/dorvia/i.test(await p.evaluate(()=>document.body.innerText));
+console.log("identidad h1:", await p.evaluate(()=>document.querySelector('h1')?.innerText), "| sin Dorvia:", noDorvia);
+await b.close();
