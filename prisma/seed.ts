@@ -12,48 +12,20 @@ function hashPassword(password: string): string {
 }
 
 async function main() {
-  // --- BrandProfile de ejemplo (tenant inicial) ---
-  const nombre = "Estudio Dorvia";
-  let tenant = await prisma.brandProfile.findFirst({ where: { nombre } });
-  if (!tenant) {
-    tenant = await prisma.brandProfile.create({
-      data: {
-        nombre,
-        logoUrl: null,
-        colorPrimary: "#1f2937",
-        colorSecondary: "#ffffff",
-        colorAccent: "#c9a84c",
-        fontFamily: "Inter",
-        razonSocial: "Dorvia Soluciones S.A.S.",
-        cuit: "30-71000000-7",
-        domicilio: "Av. Corrientes 1234, CABA, Argentina",
-        condicionIVA: "Responsable Inscripto",
-        iibb: "901-123456-7",
-        contactoEmail: "solucionesdorvia@gmail.com",
-        contactoTel: "+54 11 5555-5555",
-        contactoWeb: "www.dorvia.com.ar",
-      },
-    });
-    console.log(`✓ BrandProfile creado: ${tenant.id} (${tenant.nombre})`);
-  } else {
-    console.log(`• BrandProfile ya existe: ${tenant.id} (${tenant.nombre})`);
-  }
-
-  // --- Usuario único ---
+  // Solo crea el usuario. La cuenta arranca SIN marca: el usuario crea su
+  // primera marca al iniciar sesión (onboarding).
   const email = process.env.SEED_USER_EMAIL ?? "prueba@ger.com";
   const password = process.env.SEED_USER_PASSWORD ?? "prueba123";
+  const name = process.env.SEED_USER_NAME ?? "Usuario";
   const existing = await prisma.user.findUnique({ where: { email } });
   if (!existing) {
     await prisma.user.create({
-      data: { email, password: hashPassword(password), name: "pruebager" },
+      data: { email, password: hashPassword(password), name },
     });
     console.log(`✓ Usuario creado: ${email} / ${password}`);
   } else {
     console.log(`• Usuario ya existe: ${email}`);
   }
-
-  console.log("\nDEFAULT_TENANT_ID sugerido para .env:");
-  console.log(tenant.id);
 }
 
 main()

@@ -1,8 +1,10 @@
 import { FacturaForm } from "@/components/factura-form";
+import { requireTenant } from "@/lib/tenant";
 
 export const dynamic = "force-dynamic";
 
-export default function NuevaFacturaPage() {
+export default async function NuevaFacturaPage() {
+  await requireTenant();
   return (
     <div className="space-y-6">
       <div>

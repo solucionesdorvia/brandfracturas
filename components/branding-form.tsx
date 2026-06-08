@@ -61,7 +61,13 @@ function ColorField({
   );
 }
 
-export function BrandingForm({ brand }: { brand: BrandData }) {
+export function BrandingForm({
+  brand,
+  isNew = false,
+}: {
+  brand: BrandData;
+  isNew?: boolean;
+}) {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [pending, startTransition] = useTransition();
@@ -102,6 +108,12 @@ export function BrandingForm({ brand }: { brand: BrandData }) {
       const res = await updateBranding(fd);
       if (!res.ok) {
         setMsg({ ok: false, text: res.error });
+        return;
+      }
+      if (res.created) {
+        // Onboarding completo: vamos al dashboard.
+        router.push("/dashboard");
+        router.refresh();
         return;
       }
       setMsg({ ok: true, text: "Identidad guardada. Los próximos documentos la usan." });
@@ -246,7 +258,11 @@ export function BrandingForm({ brand }: { brand: BrandData }) {
 
         <div className="flex justify-end">
           <Button type="submit" disabled={pending}>
-            {pending ? "Guardando…" : "Guardar identidad"}
+            {pending
+              ? "Guardando…"
+              : isNew
+                ? "Crear marca y empezar"
+                : "Guardar identidad"}
           </Button>
         </div>
       </div>

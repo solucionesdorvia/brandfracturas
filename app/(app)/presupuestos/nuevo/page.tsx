@@ -1,14 +1,12 @@
 import { prisma } from "@/lib/db";
-import { getDefaultTenant } from "@/lib/tenant";
+import { requireTenant } from "@/lib/tenant";
 import { PresupuestoForm } from "@/components/presupuesto-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function NuevoPresupuestoPage() {
-  const [count, tenant] = await Promise.all([
-    prisma.presupuesto.count(),
-    getDefaultTenant(),
-  ]);
+  const tenant = await requireTenant();
+  const count = await prisma.presupuesto.count();
   const year = new Date().getFullYear();
   const defaultNumero = `P-${year}-${String(count + 1).padStart(4, "0")}`;
 

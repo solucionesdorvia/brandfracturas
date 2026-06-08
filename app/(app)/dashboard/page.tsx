@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getDefaultTenant } from "@/lib/tenant";
+import { requireTenant } from "@/lib/tenant";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -39,7 +39,7 @@ function EstadoBadge({ estado }: { estado: string }) {
 }
 
 export default async function DashboardPage() {
-  const tenant = await getDefaultTenant();
+  const tenant = await requireTenant();
   const [presupuestos, facturas] = await Promise.all([
     prisma.presupuesto.findMany({
       where: { tenantId: tenant.id },

@@ -3,12 +3,12 @@
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
-import { getDefaultTenantId } from "@/lib/tenant";
+import { getTenant } from "@/lib/tenant";
 import { storage } from "@/lib/storage";
 import { brandingSchema } from "@/lib/validations/branding";
 
 export type BrandingResult =
-  | { ok: true }
+  | { ok: true; created: boolean }
   | { ok: false; error: string };
 
 const LOGO_TYPES: Record<string, string> = {
@@ -41,7 +41,7 @@ export async function updateBranding(
     return { ok: false, error: parsed.error.issues[0]?.message ?? "Datos inválidos" };
   }
 
-  const tenantId = await getDefaultTenantId();
+  const existing = await getTenant();
   const data = parsed.data;
 
   // Logo opcional: si subieron un archivo de imagen, lo guardamos.
@@ -63,32 +63,43 @@ export async function updateBranding(
   // Si pidieron quitar el logo.
   const removeLogo = formData.get("removeLogo") === "1";
 
+  const common = {
+    nombre: data.nombre,
+    razonSocial: data.razonSocial,
+    cuit: data.cuit,
+    domicilio: data.domicilio,
+    condicionIVA: data.condicionIVA,
+    iibb: data.iibb || null,
+    contactoEmail: data.contactoEmail || null,
+    contactoTel: data.contactoTel || null,
+    contactoWeb: data.contactoWeb || null,
+    colorPrimary: data.colorPrimary,
+    colorSecondary: data.colorSecondary,
+    colorAccent: data.colorAccent,
+    fontFamily: data.fontFamily,
+  };
+
   try {
-    await prisma.brandProfile.update({
-      where: { id: tenantId },
-      data: {
-        nombre: data.nombre,
-        razonSocial: data.razonSocial,
-        cuit: data.cuit,
-        domicilio: data.domicilio,
-        condicionIVA: data.condicionIVA,
-        iibb: data.iibb || null,
-        contactoEmail: data.contactoEmail || null,
-        contactoTel: data.contactoTel || null,
-        contactoWeb: data.contactoWeb || null,
-        colorPrimary: data.colorPrimary,
-        colorSecondary: data.colorSecondary,
-        colorAccent: data.colorAccent,
-        fontFamily: data.fontFamily,
-        ...(logoUrl ? { logoUrl } : removeLogo ? { logoUrl: null } : {}),
-      },
-    });
+    if (existing) {
+      await prisma.brandProfile.update({
+        where: { id: existing.id },
+        data: {
+          ...common,
+          ...(logoUrl ? { logoUrl } : removeLogo ? { logoUrl: null } : {}),
+        },
+      });
+    } else {
+      // Primera marca de la cuenta (onboarding).
+      await prisma.brandProfile.create({
+        data: { ...common, logoUrl: logoUrl ?? null },
+      });
+    }
   } catch (e) {
     console.error(e);
-    return { ok: false, error: "No se pudo guardar la identidad." };
+    return { ok: false, error: "No se pudo guardar la marca." };
   }
 
   revalidatePath("/identidad");
   revalidatePath("/dashboard");
-  return { ok: true };
+  return { ok: true, created: !existing };
 }
